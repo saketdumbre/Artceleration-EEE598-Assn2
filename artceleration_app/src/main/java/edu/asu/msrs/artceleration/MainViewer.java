@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import edu.asu.msrs.artcelerationlibrary.ArtLib;
+import edu.asu.msrs.artcelerationlibrary.ArtTransformService;
 import edu.asu.msrs.artcelerationlibrary.TransformHandler;
 import edu.asu.msrs.artcelerationlibrary.TransformTest;
 
@@ -73,6 +75,13 @@ public class MainViewer extends AppCompatActivity {
                 }else{
                     makeToast("Transform request failed"+ transforms[t.transformType]);
                 }
+
+                /*if (ArtTransformService.respondTransform(src_img, t.transformType, t.intArgs, t.floatArgs)){
+                    makeToast("Transform requested : "+ transforms[t.transformType]);
+                }else{
+                    makeToast("Transform request failed"+ transforms[t.transformType]);
+                }
+                */
             }
 
             @Override

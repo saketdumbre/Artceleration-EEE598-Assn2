@@ -1,16 +1,22 @@
 package edu.asu.msrs.artcelerationlibrary;
 
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
+import android.os.RemoteException;
 import android.util.Log;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 
 public class ArtTransformService extends Service {
     public ArtTransformService() {
@@ -50,4 +56,46 @@ public class ArtTransformService extends Service {
     public IBinder onBind(Intent intent) {
         return mMessenger.getBinder();
     }
+
+    private Messenger mmMessenger;
+    private boolean mBound;
+    ServiceConnection mServiceConnection = new ServiceConnection(){
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mmMessenger = new Messenger(service);
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+            mmMessenger = null;
+            mBound = false;
+        }
+    };
+
+    public boolean respondTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
+        try {
+            MemoryFile memFile = new MemoryFile("someone",30);
+            ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memFile);
+
+            int what = ArtLib.MSG_MULT;
+            Bundle dataBundle = new Bundle();
+            dataBundle.putParcelable("pfd", pfd);
+            Message msg = Message.obtain(null,what,4,5);
+            msg.setData(dataBundle);
+
+            try {
+                mMessenger.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return true;
+    }
+
 }

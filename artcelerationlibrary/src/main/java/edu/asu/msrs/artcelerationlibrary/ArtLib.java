@@ -7,12 +7,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.MemoryFile;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -24,10 +26,44 @@ public class ArtLib {
     private TransformHandler artlistener;
     private Activity mActivity;
 
+    class ArtLibHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg){
+            Log.d(TAG, "handleMessage(msg):" + msg.what);
+            switch(msg.what){
+                case MSG_HELLO:
+                    Log.d(TAG, "HELLOOTHERSIDE!");
+                    break;
+
+                case MSG_MULT:
+                    Bundle dataBundle = msg.getData();
+                    //ParcelFileDescriptor pfd = (ParcelFileDescriptor)dataBundle.get("pfd");
+                    //FileInputStream fios = new FileInputStream(pfd);
+
+                    int result = msg.arg1 * msg.arg2;
+                    Log.d(TAG, "MULTIPLICATION! " + result);
+                    break;
+
+                default:
+                    break;
+
+            }
+
+        }
+
+    }
+
+    String TAG = "AtTransformService";
+    static final int MSG_HELLO = 1;
+    static final int MSG_MULT = 2;
+
+
     public ArtLib(Activity activity){
         mActivity=activity;
         init();
     }
+
+
 
     private Messenger mMessenger;
     private boolean mBound;
@@ -91,5 +127,7 @@ public class ArtLib {
 
         return true;
     }
+
+    final Messenger mmMessenger = new Messenger(new ArtLib.ArtLibHandler());
 
 }
