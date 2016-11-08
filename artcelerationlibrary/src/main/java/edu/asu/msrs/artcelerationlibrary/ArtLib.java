@@ -1,6 +1,20 @@
 package edu.asu.msrs.artcelerationlibrary;
 
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.MemoryFile;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.ParcelFileDescriptor;
+import android.os.RemoteException;
+
+import java.io.IOException;
 
 /**
  * Created by rlikamwa on 10/2/2016.
@@ -8,11 +22,35 @@ import android.graphics.Bitmap;
 
 public class ArtLib {
     private TransformHandler artlistener;
+    private Activity mActivity;
 
-    public ArtLib(){
-
+    public ArtLib(Activity activity){
+        mActivity=activity;
+        init();
     }
 
+    private Messenger mMessenger;
+    private boolean mBound;
+    ServiceConnection mServiceConnection = new ServiceConnection(){
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mMessenger = new Messenger(service);
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+            mMessenger = null;
+            mBound = false;
+        }
+    };
+
+
+    public void init(){
+        mActivity.bindService(new Intent(mActivity, ArtTransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
+    }
     public String[] getTransformsArray(){
         String[] transforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
         return transforms;
@@ -32,6 +70,25 @@ public class ArtLib {
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
+        try {
+            MemoryFile memFile = new MemoryFile("someone",30);
+            ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memFile);
+
+            int what = ArtTransformService.MSG_MULT;
+            Bundle dataBundle = new Bundle();
+            dataBundle.putParcelable("pfd", pfd);
+            Message msg = Message.obtain(null,what,2,3);
+            msg.setData(dataBundle);
+
+        try {
+            mMessenger.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return true;
     }
 
