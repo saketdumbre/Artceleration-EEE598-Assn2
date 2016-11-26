@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15,32 +16,39 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 
-import java.io.FileInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ArtTransformService extends Service {
     public ArtTransformService() {
     }
     String TAG = "AtTransformService";
-    static final int MSG_HELLO = 1;
-    static final int MSG_MULT = 2;
+    static final int UNSHARP_MASK = 0;
+    static final int GAUSSIAN_BLUR = 1;
+
+    static {
+        System.loadLibrary("ImageTransforms");
+    }
+    public native void gaussian_blur(Bitmap img, int[] intArgs, float[] floatArgs);
+
 
     class ArtTransformHandler extends Handler{
         @Override
         public void handleMessage(Message msg){
             Log.d(TAG, "handleMessage(msg):" + msg.what);
             switch(msg.what){
-                case MSG_HELLO:
+                case UNSHARP_MASK:
                     Log.d(TAG, "HELLO!");
                     break;
 
-                case MSG_MULT:
+                case GAUSSIAN_BLUR:
                     Bundle dataBundle = msg.getData();
-                    //ParcelFileDescriptor pfd = (ParcelFileDescriptor)dataBundle.get("pfd");
-                    //FileInputStream fios = new FileInputStream(pfd);
+                    mmMessenger=msg.replyTo;
+                    byte[] byteArray = dataBundle.getByteArray("Image");
+                    Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-                    int result = msg.arg1 * msg.arg2;
-                    Log.d(TAG, "MULT! " + result);
+                    gaussian_blur(bmp,dataBundle.getIntArray("IntArgs"),dataBundle.getFloatArray("FloatArgs"));
+                    respondTransform(bmp,GAUSSIAN_BLUR,dataBundle.getLong("TimeStamp"));
                     break;
 
                 default:
@@ -75,19 +83,26 @@ public class ArtTransformService extends Service {
         }
     };
 
-    public boolean respondTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
+    public boolean respondTransform(Bitmap img, int index, Long requestTime){
+        Log.i(TAG,"Respond Transform called");
         try {
             MemoryFile memFile = new MemoryFile("someone",30);
             ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memFile);
 
-            int what = ArtLib.MSG_MULT;
+            int what = index;
             Bundle dataBundle = new Bundle();
             dataBundle.putParcelable("pfd", pfd);
+//            dataBundle.putParcelable("Image",img);
             Message msg = Message.obtain(null,what,4,5);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            img.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            dataBundle.putByteArray("Image",byteArray);
+
             msg.setData(dataBundle);
 
             try {
-                mMessenger.send(msg);
+                mmMessenger.send(msg);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -97,5 +112,4 @@ public class ArtTransformService extends Service {
 
         return true;
     }
-
 }

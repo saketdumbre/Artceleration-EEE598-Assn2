@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,6 +17,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
@@ -31,31 +33,23 @@ public class ArtLib {
         public void handleMessage(Message msg){
             Log.d(TAG, "handleMessage(msg):" + msg.what);
             switch(msg.what){
-                case MSG_HELLO:
-                    Log.d(TAG, "HELLOOTHERSIDE!");
+                case UNSHARP_MASK:
                     break;
-
-                case MSG_MULT:
+                case GAUSSIAN_BLUR:
+                    Log.i(TAG,"After Respond Transform");
                     Bundle dataBundle = msg.getData();
-                    //ParcelFileDescriptor pfd = (ParcelFileDescriptor)dataBundle.get("pfd");
-                    //FileInputStream fios = new FileInputStream(pfd);
+                    byte[] byteArray = dataBundle.getByteArray("Image");
+                    Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-                    int result = msg.arg1 * msg.arg2;
-                    Log.d(TAG, "MULTIPLICATION! " + result);
-                    break;
-
-                default:
-                    break;
-
+                    Log.i(TAG,"Calling TransformHandler");
+                    artlistener.onTransformProcessed(bmp);
             }
-
         }
-
     }
 
     String TAG = "AtTransformService";
-    static final int MSG_HELLO = 1;
-    static final int MSG_MULT = 2;
+    static final int GAUSSIAN_BLUR = 1;
+    static final int UNSHARP_MASK = 0;
 
 
     public ArtLib(Activity activity){
@@ -88,14 +82,14 @@ public class ArtLib {
         mActivity.bindService(new Intent(mActivity, ArtTransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
     }
     public String[] getTransformsArray(){
-        String[] transforms = {"Gaussian Blur", "Neon edges", "Color Filter"};
+        String[] transforms = {"Unsharp Mask", "Gaussian Blur", "Color Filter"};
         return transforms;
     }
 
     public TransformTest[] getTestsArray(){
         TransformTest[] transforms = new TransformTest[3];
         transforms[0]=new TransformTest(0, new int[]{1,2,3}, new float[]{0.1f, 0.2f, 0.3f});
-        transforms[1]=new TransformTest(1, new int[]{11,22,33}, new float[]{0.3f, 0.2f, 0.3f});
+        transforms[1]=new TransformTest(1, new int[]{45}, new float[]{0.8f});
         transforms[2]=new TransformTest(2, new int[]{51,42,33}, new float[]{0.5f, 0.6f, 0.3f});
 
         return transforms;
@@ -106,28 +100,42 @@ public class ArtLib {
     }
 
     public boolean requestTransform(Bitmap img, int index, int[] intArgs, float[] floatArgs){
-        try {
-            MemoryFile memFile = new MemoryFile("someone",30);
-            ParcelFileDescriptor pfd =  MemoryFileUtil.getParcelFileDescriptor(memFile);
+        if(img!=null && intArgs!=null && floatArgs!=null) {
+            try {
+                MemoryFile memFile = new MemoryFile("someone", 30);
+                ParcelFileDescriptor pfd = MemoryFileUtil.getParcelFileDescriptor(memFile);
 
-            int what = ArtTransformService.MSG_MULT;
-            Bundle dataBundle = new Bundle();
-            dataBundle.putParcelable("pfd", pfd);
-            Message msg = Message.obtain(null,what,2,3);
-            msg.setData(dataBundle);
+                int what = index;
+                Bundle dataBundle = new Bundle();
+                dataBundle.putParcelable("pfd", pfd);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                img.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+                dataBundle.putByteArray("Image", byteArray);
+                dataBundle.putIntArray("IntArgs", intArgs);
+                dataBundle.putFloatArray("FloatArgs", floatArgs);
+                Long timestamp = System.currentTimeMillis() / 1000;
+                dataBundle.putLong("TimeStamp", timestamp);
+                Message msg = Message.obtain(null, what, 2, 3);
+                msg.replyTo=mmMessenger;
+                msg.setData(dataBundle);
 
-        try {
-            mMessenger.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
+                try {
+                    mMessenger.send(msg);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        else
+            Log.i(TAG,"Arrays are null");
+        Log.i(TAG,"Exiting from Request Transform");
 
         return true;
     }
 
-    final Messenger mmMessenger = new Messenger(new ArtLib.ArtLibHandler());
+   final Messenger mmMessenger = new Messenger(new ArtLib.ArtLibHandler());
 
 }
