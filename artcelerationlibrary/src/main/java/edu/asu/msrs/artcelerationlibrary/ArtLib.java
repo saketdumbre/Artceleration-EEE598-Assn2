@@ -32,16 +32,18 @@ public class ArtLib {
         @Override
         public void handleMessage(Message msg){
             Log.d(TAG, "handleMessage(msg):" + msg.what);
+            Bundle dataBundle = msg.getData();
+            byte[] byteArray = dataBundle.getByteArray("Image");
+            Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             switch(msg.what){
                 case UNSHARP_MASK:
+                    Log.i(TAG,"After Respond Transform for unsharp");
+                    Log.i(TAG,"Calling TransformHandler for unsharp");
+                    artlistener.onTransformProcessed(bmp);
                     break;
                 case GAUSSIAN_BLUR:
-                    Log.i(TAG,"After Respond Transform");
-                    Bundle dataBundle = msg.getData();
-                    byte[] byteArray = dataBundle.getByteArray("Image");
-                    Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-
-                    Log.i(TAG,"Calling TransformHandler");
+                    Log.i(TAG,"After Respond Transform for gaussian");
+                    Log.i(TAG,"Calling TransformHandler for gaussian");
                     artlistener.onTransformProcessed(bmp);
             }
         }
@@ -49,7 +51,7 @@ public class ArtLib {
 
     String TAG = "AtTransformService";
     static final int GAUSSIAN_BLUR = 1;
-    static final int UNSHARP_MASK = 0;
+    static final int UNSHARP_MASK = 2;
 
 
     public ArtLib(Activity activity){
@@ -82,15 +84,15 @@ public class ArtLib {
         mActivity.bindService(new Intent(mActivity, ArtTransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
     }
     public String[] getTransformsArray(){
-        String[] transforms = {"Unsharp Mask", "Gaussian Blur", "Color Filter"};
+        String[] transforms = {"Color Filter", "Gaussian Blur", "Unsharp Mask"};
         return transforms;
     }
 
     public TransformTest[] getTestsArray(){
         TransformTest[] transforms = new TransformTest[3];
-        transforms[0]=new TransformTest(0, new int[]{1,2,3}, new float[]{0.1f, 0.2f, 0.3f});
-        transforms[1]=new TransformTest(1, new int[]{45}, new float[]{5.5f});
-        transforms[2]=new TransformTest(2, new int[]{51,42,33}, new float[]{0.5f, 0.6f, 0.3f});
+        transforms[0]=new TransformTest(0, new int[]{51,42,33}, new float[]{0.5f, 0.6f, 0.3f});
+        transforms[1]=new TransformTest(1, new int[]{10}, new float[]{5.5f});
+        transforms[2]=new TransformTest(2, new int[]{}, new float[]{5.5f,10.5f});
 
         return transforms;
     }

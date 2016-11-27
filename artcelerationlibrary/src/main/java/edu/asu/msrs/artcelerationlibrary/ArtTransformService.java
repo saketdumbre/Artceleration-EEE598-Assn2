@@ -23,29 +23,31 @@ public class ArtTransformService extends Service {
     public ArtTransformService() {
     }
     String TAG = "AtTransformService";
-    static final int UNSHARP_MASK = 0;
+    static final int UNSHARP_MASK = 2;
     static final int GAUSSIAN_BLUR = 1;
 
     static {
         System.loadLibrary("ImageTransforms");
     }
     public native void gaussian_blur(Bitmap img, int[] intArgs, float[] floatArgs);
+    public native void unsharp_mask(Bitmap img,float[] floatArgs);
 
 
     class ArtTransformHandler extends Handler{
         @Override
         public void handleMessage(Message msg){
+            Bundle dataBundle = msg.getData();
+            mmMessenger=msg.replyTo;
+            byte[] byteArray = dataBundle.getByteArray("Image");
+            Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
             Log.d(TAG, "handleMessage(msg):" + msg.what);
             switch(msg.what){
                 case UNSHARP_MASK:
-                    Log.d(TAG, "HELLO!");
+                    unsharp_mask(bmp,dataBundle.getFloatArray("FloatArgs"));
+                    respondTransform(bmp,UNSHARP_MASK,dataBundle.getLong("TimeStamp"));
                     break;
 
                 case GAUSSIAN_BLUR:
-                    Bundle dataBundle = msg.getData();
-                    mmMessenger=msg.replyTo;
-                    byte[] byteArray = dataBundle.getByteArray("Image");
-                    Bitmap bmp = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
                     gaussian_blur(bmp,dataBundle.getIntArray("IntArgs"),dataBundle.getFloatArray("FloatArgs"));
                     respondTransform(bmp,GAUSSIAN_BLUR,dataBundle.getLong("TimeStamp"));
