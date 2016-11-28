@@ -23,14 +23,16 @@ public class ArtTransformService extends Service {
     public ArtTransformService() {
     }
     String TAG = "AtTransformService";
-    static final int UNSHARP_MASK = 2;
     static final int GAUSSIAN_BLUR = 1;
+    static final int UNSHARP_MASK = 2;
+    static final int SOBEL_EDGE =3;
 
     static {
         System.loadLibrary("ImageTransforms");
     }
     public native void gaussian_blur(Bitmap img, int[] intArgs, float[] floatArgs);
     public native void unsharp_mask(Bitmap img,float[] floatArgs);
+    public native void sobel_edge_filter(Bitmap img,int[] a);
 
 
     class ArtTransformHandler extends Handler{
@@ -46,13 +48,14 @@ public class ArtTransformService extends Service {
                     unsharp_mask(bmp,dataBundle.getFloatArray("FloatArgs"));
                     respondTransform(bmp,UNSHARP_MASK,dataBundle.getLong("TimeStamp"));
                     break;
-
                 case GAUSSIAN_BLUR:
-
                     gaussian_blur(bmp,dataBundle.getIntArray("IntArgs"),dataBundle.getFloatArray("FloatArgs"));
                     respondTransform(bmp,GAUSSIAN_BLUR,dataBundle.getLong("TimeStamp"));
                     break;
-
+                case SOBEL_EDGE:
+                    sobel_edge_filter(bmp,dataBundle.getIntArray("IntArgs"));
+                    respondTransform(bmp,SOBEL_EDGE,dataBundle.getLong("TimeStamp"));
+                    break;
                 default:
                     break;
 

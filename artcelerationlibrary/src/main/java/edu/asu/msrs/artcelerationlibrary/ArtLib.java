@@ -27,6 +27,10 @@ import java.io.IOException;
 public class ArtLib {
     private TransformHandler artlistener;
     private Activity mActivity;
+    String TAG = "AtTransformService";
+    static final int GAUSSIAN_BLUR = 1;
+    static final int UNSHARP_MASK = 2;
+    static final int SOBEL_EDGE =3;
 
     class ArtLibHandler extends Handler {
         @Override
@@ -45,15 +49,15 @@ public class ArtLib {
                     Log.i(TAG,"After Respond Transform for gaussian");
                     Log.i(TAG,"Calling TransformHandler for gaussian");
                     artlistener.onTransformProcessed(bmp);
+                    break;
+                case SOBEL_EDGE:
+                    Log.i(TAG,"After Respond Transform for Sobel Edge");
+                    Log.i(TAG,"Calling TransformHandler for Sobel Edge");
+                    artlistener.onTransformProcessed(bmp);
+                    break;
             }
         }
     }
-
-    String TAG = "AtTransformService";
-    static final int GAUSSIAN_BLUR = 1;
-    static final int UNSHARP_MASK = 2;
-
-
     public ArtLib(Activity activity){
         mActivity=activity;
         init();
@@ -84,16 +88,16 @@ public class ArtLib {
         mActivity.bindService(new Intent(mActivity, ArtTransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
     }
     public String[] getTransformsArray(){
-        String[] transforms = {"Color Filter", "Gaussian Blur", "Unsharp Mask"};
+        String[] transforms = {"Color Filter", "Gaussian Blur", "Unsharp Mask","Sobel Edge Filter"};
         return transforms;
     }
 
     public TransformTest[] getTestsArray(){
-        TransformTest[] transforms = new TransformTest[3];
+        TransformTest[] transforms = new TransformTest[4];
         transforms[0]=new TransformTest(0, new int[]{51,42,33}, new float[]{0.5f, 0.6f, 0.3f});
         transforms[1]=new TransformTest(1, new int[]{10}, new float[]{5.5f});
         transforms[2]=new TransformTest(2, new int[]{}, new float[]{5.5f,10.5f});
-
+        transforms[3]=new TransformTest(3,new int[]{2},new float[]{});
         return transforms;
     }
 
