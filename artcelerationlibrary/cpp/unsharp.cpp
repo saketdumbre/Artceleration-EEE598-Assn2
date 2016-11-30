@@ -7,11 +7,11 @@
 #include <stdio.h>
 #include <math.h>
 #include "ImageTransforms.h"
-#define PI 3.14
 
-//extern static void gaussian_blur(AndroidBitmapInfo *info, uint32_t *pixels, int a[], float sigma[]);
 
-static void unsharp_mask(AndroidBitmapInfo* info, uint32_t *pixels, float f[]){
+//extern void gaussian_blur(AndroidBitmapInfo *info, uint32_t *pixels, int a[], float sigma[]);
+
+void unsharp_mask(AndroidBitmapInfo* info, uint32_t *pixels, float f[]){
     //LOGI("Starting UnSharp");
     //Making a copy of the original image
     uint32_t*original=new uint32_t[info->width*info->height];
@@ -49,28 +49,4 @@ static void unsharp_mask(AndroidBitmapInfo* info, uint32_t *pixels, float f[]){
     }
     delete []original;
     //LOGI("Exiting Unsharp");
-}
-
-extern "C" {
-    JNIEXPORT void JNICALL
-    Java_edu_asu_msrs_artcelerationlibrary_ArtTransformService_unsharp_1mask(JNIEnv *env,
-                                                                             jobject instance,
-                                                                             jobject img,
-                                                                             jfloatArray floatArgs_) {
-    //    LOGI("JNI: - Unsharp Mask");
-        AndroidBitmapInfo info;
-        int ret;
-        uint32_t *pixels;
-
-        ret = AndroidBitmap_getInfo(env, img, &info);
-        ret = AndroidBitmap_lockPixels(env, img, (void **) &pixels);
-        jfloat *floatArgs = env->GetFloatArrayElements(floatArgs_, NULL);
-    //    LOGI("Locking pixels");
-        unsharp_mask(&info, pixels, floatArgs);
-
-    //    LOGI("Unlocking");
-        AndroidBitmap_unlockPixels(env, img);
-
-        env->ReleaseFloatArrayElements(floatArgs_, floatArgs, 0);
-    }
 }

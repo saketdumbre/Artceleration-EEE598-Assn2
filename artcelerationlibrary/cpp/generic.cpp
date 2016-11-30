@@ -15,7 +15,7 @@ int value_check(int color_channel){
     else return color_channel;
 }
 
-static int square_add(int position, uint32_t *gr_x, uint32_t *gr_y) {
+int square_add(int position, uint32_t *gr_x, uint32_t *gr_y) {
     int sq1,sq2;
     sq1 = ((gr_x[position] & 0x0000FF00) >> 8) * ((gr_x[position] & 0x0000FF00) >> 8);
     sq2 = ((gr_y[position] & 0x0000FF00) >> 8) * ((gr_y[position] & 0x0000FF00) >> 8);

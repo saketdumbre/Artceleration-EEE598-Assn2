@@ -10,9 +10,9 @@
 #include "ImageTransforms.h"
 #define PI 3.14
 
-//extern int value_check(int color_channel);
+extern int value_check(int color_channel);
 
-static void gaussian_blur(AndroidBitmapInfo* info, void* pixels, int a0[], float f0[]) {
+void gaussian_blur(AndroidBitmapInfo* info, void* pixels, int a0[], float f0[]) {
     int r = a0[0];
     float std_dev = f0[0];
     int image_width = info->width;
@@ -70,31 +70,4 @@ static void gaussian_blur(AndroidBitmapInfo* info, void* pixels, int a0[], float
     delete[] q_array;
     delete[] g;
 //    LOGI("Exiting Gaussian Blur function");
-}
-
-extern "C" {
-    JNIEXPORT void JNICALL
-    Java_edu_asu_msrs_artcelerationlibrary_ArtTransformService_gaussian_1blur(JNIEnv *env,
-                                                                              jobject instance,
-                                                                              jobject img,
-                                                                              jintArray intArgs_,
-                                                                              jfloatArray floatArgs_) {
-    //        LOGI("JNI: - Gaussian Blur");
-        AndroidBitmapInfo info;
-        int ret;
-        void *pixels;
-        ret = AndroidBitmap_getInfo(env, img, &info);
-        ret = AndroidBitmap_lockPixels(env, img, &pixels);
-        int *intArgs = env->GetIntArrayElements(intArgs_, NULL);
-        float *floatArgs = env->GetFloatArrayElements(floatArgs_, NULL);
-
-    //        LOGI("Locking pixels");
-        gaussian_blur(&info, pixels, intArgs, floatArgs);
-
-    //        LOGI("Unlocking");
-        AndroidBitmap_unlockPixels(env, img);
-
-        env->ReleaseIntArrayElements(intArgs_, intArgs, 0);
-        env->ReleaseFloatArrayElements(floatArgs_, floatArgs, 0);
-    }
 }

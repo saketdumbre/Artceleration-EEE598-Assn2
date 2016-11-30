@@ -9,8 +9,8 @@
 #include "ImageTransforms.h"
 #define PI 3.14
 
-//extern int value_check(int color_channel);
-//extern int square_add(int position, uint32_t *gr_x, uint32_t *gr_y);
+extern int value_check(int color_channel);
+extern int square_add(int position, uint32_t *gr_x, uint32_t *gr_y);
 
 void get_gradient_x(AndroidBitmapInfo* info,int* q_array,uint32_t* pixels){
     int sx[3][3]={{-1,0,1},{-2,0,2},{-1,0,1}};
@@ -83,7 +83,7 @@ void get_gradient_y(AndroidBitmapInfo* info,int* q_array,uint32_t* pixels){
     }
 }
 
-static void sobel_edge_filter(AndroidBitmapInfo* info,uint32_t* pixels, int a[]){
+void sobel_edge_filter(AndroidBitmapInfo* info,uint32_t* pixels, int a[]){
 
     int red,green,blue;
     uint32_t *px=pixels;
@@ -122,26 +122,4 @@ static void sobel_edge_filter(AndroidBitmapInfo* info,uint32_t* pixels, int a[])
         delete [] gr_y;
     }
     delete [] q_array;
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_edu_asu_msrs_artcelerationlibrary_ArtTransformService_sobel_1edge_1filter(JNIEnv *env,
-                                                                               jobject instance,
-                                                                               jobject img,
-                                                                               jintArray a_) {
-//    LOGI("JNI: - Sobel Edge Filter");
-    AndroidBitmapInfo info;
-    int ret;
-    uint32_t *pixels;
-
-    ret=AndroidBitmap_getInfo(env, img, &info);
-    ret=AndroidBitmap_lockPixels(env, img, (void **) &pixels);
-    jint *a = env->GetIntArrayElements(a_, NULL);
-//    LOGI("Locking pixels");
-    sobel_edge_filter(&info,pixels,a);
-
-//    LOGI("Unlocking");
-    AndroidBitmap_unlockPixels(env, img);
-    env->ReleaseIntArrayElements(a_, a, 0);
 }

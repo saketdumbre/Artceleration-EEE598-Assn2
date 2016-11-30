@@ -109,16 +109,16 @@ public class ArtLib {
         mActivity.bindService(new Intent(mActivity, ArtTransformService.class), mServiceConnection, Context.BIND_AUTO_CREATE);
     }
     public String[] getTransformsArray(){
-        String[] transforms = {"Gaussian Blur", "Unsharp Mask","Sobel Edge Filter","Neon Edges"};
+        String[] transforms = {"Gaussian Blur", "Unsharp Mask","Sobel Edge Filter"};//,"Neon Edges"};
         return transforms;
     }
 
     public TransformTest[] getTestsArray(){
-        TransformTest[] transforms = new TransformTest[4];
+        TransformTest[] transforms = new TransformTest[3];
         transforms[0]=new TransformTest(0, new int[]{100}, new float[]{10.5f});
         transforms[1]=new TransformTest(1, new int[]{}, new float[]{5.5f,10.5f});
         transforms[2]=new TransformTest(2, new int[]{2},new float[]{});
-        transforms[3]=new TransformTest(3, new int []{},new float[]{3.5f,10.7f,0.3f});
+        //transforms[3]=new TransformTest(3, new int []{},new float[]{3.5f,10.7f,0.3f});
         return transforms;
     }
 

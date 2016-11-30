@@ -32,7 +32,7 @@ public class ArtTransformService extends Service {
     public native void gaussian_blur(Bitmap img, int[] intArgs, float[] floatArgs);
     public native void unsharp_mask(Bitmap img,float[] floatArgs);
     public native void sobel_edge_filter(Bitmap img,int[] a);
-    public native void neon_edge(Bitmap img, float[] floatArgs);
+    //public native void neon_edge(Bitmap img, float[] floatArgs);
 
     class ArtTransformHandler extends Handler{
         @Override
@@ -77,7 +77,7 @@ public class ArtTransformService extends Service {
                     });
                     sobelEdge.start();
                     break;
-                case NEON_EDGE:
+                /*case NEON_EDGE:
                     final Thread neonEdge =new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -87,6 +87,7 @@ public class ArtTransformService extends Service {
                         }
                     });
                     neonEdge.start();
+                    break;*/
                 default:
                     break;
 
