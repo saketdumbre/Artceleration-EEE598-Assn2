@@ -1,6 +1,6 @@
-//
-// Created by Deepthy on 11/30/2016.
-//
+/* This is the header File used for all individual transform files
+ * It gives the declaration for all the functions used in the used to implement
+ * The transforms*/
 
 #ifndef ARTCELERATION_IMAGETRANSFORMS_H
 #define ARTCELERATION_IMAGETRANSFORMS_H
@@ -19,4 +19,5 @@ void sobel_edge_filter(AndroidBitmapInfo* info,uint32_t* pixels, int a[]);
 void gaussian_blur(AndroidBitmapInfo* info, void* pixels, int a0[], float f0[]);
 void neon_edges(AndroidBitmapInfo* info, uint32_t *pixels, float f[]);
 void unsharp_mask(AndroidBitmapInfo* info, uint32_t *pixels, float f[]);
+void motion_blur(AndroidBitmapInfo* info,uint32_t *pixels,int a[]);
 #endif //ARTCELERATION_IMAGETRANSFORMS_H
